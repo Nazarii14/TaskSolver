@@ -40,10 +40,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "tasksolver.apps.TasksolverConfig",
-    "django.contrib.postgres",
-    "background_task",
-    "sslserver",
+
+    'tasksolver.apps.TasksolverConfig',
+    'django.contrib.postgres',
+    'background_task',
+    'sslserver',
     'social_django',
     'allauth',
 ]
@@ -152,7 +153,7 @@ INTERNAL_IPS = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost",
+    "http://localhost:8000",
 ]
 
 LOGGING = {

@@ -1401,3 +1401,8 @@
 2023/10/20 17:06:23 [alert] 12568#7152: 5 worker_connections are not enough
 2023/10/20 17:06:41 [error] 12568#7152: *93 connect() failed (10061: No connection could be made because the target machine actively refused it) while connecting to upstream, client: 127.0.0.1, server: localhost, request: "POST /process_number/ HTTP/1.1", upstream: "http://[::1]:1001/process_number/", host: "localhost"
 2023/10/20 17:06:43 [error] 12568#7152: *93 connect() failed (10061: No connection could be made because the target machine actively refused it) while connecting to upstream, client: 127.0.0.1, server: localhost, request: "POST /process_number/ HTTP/1.1", upstream: "http://[::1]:1002/process_number/", host: "localhost"
+2024/03/12 22:20:10 [emerg] 17176#9020: CreateDirectory() "D:\Programming\Python\nth-Prime-Number-Finder\nginx-1.25.2/temp/client_body_temp" failed (3: The system cannot find the path specified)
+2024/03/12 22:27:43 [emerg] 2960#12800: CreateDirectory() "D:\Programming\Python\nth-Prime-Number-Finder\nginx-1.25.2/temp/client_body_temp" failed (3: The system cannot find the path specified)
+2024/03/12 22:27:59 [emerg] 3332#1060: CreateDirectory() "D:\Programming\Python\nth-Prime-Number-Finder\nginx-1.25.2/temp/client_body_temp" failed (3: The system cannot find the path specified)
+2024/03/12 22:28:17 [emerg] 12824#10904: CreateDirectory() "D:\Programming\Python\nth-Prime-Number-Finder\nginx-1.25.2/temp/client_body_temp" failed (3: The system cannot find the path specified)
+2024/03/12 22:28:41 [emerg] 6236#16208: CreateDirectory() "D:\Programming\Python\nth-Prime-Number-Finder\nginx-1.25.2/temp/client_body_temp" failed (3: The system cannot find the path specified)
