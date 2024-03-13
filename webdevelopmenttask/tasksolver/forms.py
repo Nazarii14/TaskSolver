@@ -24,34 +24,3 @@ class TaskCreateForm(forms.ModelForm):
         if commit:
             image.save()
         return image
-
-
-
-
-
-
-
-# class ImageCreateForm(forms.ModelForm):
-#     class Meta:
-#         model = Image
-#         fields = ['image']
-#
-#     def clean_image(self):
-#         image = self.cleaned_data.get('image')
-#         if image:
-#             max_size = 2 * 1024 * 1024
-#             if image.size > max_size:
-#                 raise forms.ValidationError('The image size is too large. Please choose a smaller image.')
-#         return image
-#
-#     def save(self, force_insert=False, force_update=False, commit=True):
-#         image = super().save(commit=False)
-#         if commit:
-#             image.save()
-#         return image
-
-
-# class ProcessParametersForm(forms.ModelForm):
-#     class Meta:
-#         model = ProcessParameters
-#         fields = ['saturation', 'brightness', 'blur']

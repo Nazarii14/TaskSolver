@@ -1,12 +1,12 @@
-import concurrent.futures
-from django.shortcuts import render
-from .models import Task
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+import json
 import logging
 import requests
+import concurrent.futures
+from .models import Task
 from background_task import background
-import json
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 
 logger = logging.getLogger(__name__)
@@ -30,43 +30,6 @@ def process_number(request):
     return render(request, 'tasksolver/detail.html', {'tasks': user_tasks})
 
 
-# def fetch(session, url, data, task_id):
-#     try:
-#         with session.post(url, json=data, headers={'Content-Type': 'application/json'}) as response:
-#             response.raise_for_status()
-#             logger.info(f"Task ID {task_id} processed successfully.")
-#     except Exception as e:
-#         logger.error(f"Error processing Task ID {task_id}: {str(e)}")
-
-
-# @background(schedule=2)
-# def nginx_caller():
-#     logger.info("Checking for new tasks...")
-#     url = 'http://localhost:80/process_number/'
-#
-#     try:
-#         tasks = Task.objects.filter(is_running=False, is_finished=False)
-#         if tasks:
-#             logger.info(f'*********** TASKS ')
-#             logger.info(f"TASK LENGTH: {tasks.count()}")
-#
-#             jsons = [{'task_id': task.id, 'number': task.number} for task in tasks]
-#
-#             with ThreadPoolExecutor(max_workers=5) as executor:
-#                 with requests.Session() as session:
-#                     executor.map(lambda data: fetch(session, url, **data), jsons)
-#                     executor.shutdown(wait=True)
-#
-#             logger.info(f'*********** POST OK ')
-#         else:
-#             logger.info('No available tasks found in the database.')
-#         return JsonResponse({'status': 'success'})
-#     except Exception as e:
-#         logger.error(f'*********** START OF ERROR ***********')
-#         logger.error(f'Error occurred while calling nginx: {str(e)}')
-#         logger.error(f'*********** END OF ERROR ***********')
-#         return JsonResponse({'status': 'error', 'error': str(e)})
-
 @background(schedule=1)
 def nginx_caller():
     logger.info("Checking for new tasks...")
@@ -75,7 +38,7 @@ def nginx_caller():
     try:
         tasks = Task.objects.filter(is_running=False, is_finished=False)
         if tasks:
-            logger.info(f'*********** TASKS ')
+            logger.info(f'*********** TASKS ***********')
             logger.info(f"TASK LENGTH: {tasks.count()}")
 
             jsons = [{'task_id': task.id, 'number': task.number} for task in tasks]
@@ -92,7 +55,7 @@ def nginx_caller():
                     except Exception as e:
                         logger.error(f"Error processing Task ID {data['task_id']}: {str(e)}")
 
-            logger.info(f'*********** POST OK ')
+            logger.info(f'*********** POST OK ***********')
         else:
             logger.info('No available tasks found in the database.')
         return JsonResponse({'status': 'success'})
@@ -110,32 +73,6 @@ def send_request(url, data):
         return response
     except Exception as e:
         raise Exception(f"Error sending request: {str(e)}")
-
-# @background(schedule=1)
-# def nginx_caller():
-#     logger.info("Checking for new tasks...")
-#     url = 'http://localhost:80/process_number/'
-#
-#     try:
-#         task = Task.objects.filter(is_running=False, is_finished=False).first()
-#         if task:
-#             logger.info(f"NEW TASK: {task.id}")
-#             logger.info(f"Task number: {task.number}")
-#             logger.info(f"Is running: {task.is_running}")
-#             logger.info(f"Is finished: {task.is_finished}")
-#
-#             body = {'task_id': task.id, 'number': task.number}
-#
-#             x = requests.post(url, json=body, headers={'Content-Type': 'application/json'})
-#             logger.info(f'*********** POST OK ')
-#         else:
-#             logger.info('No available tasks found in the database.')
-#         return JsonResponse({'status': 'success'})
-#     except Exception as e:
-#         logger.error(f'*********** START OF ERROR ***********')
-#         logger.error(f'Error occurred while calling nginx: {str(e)}')
-#         logger.error(f'*********** END OF ERROR ***********')
-#         return JsonResponse({'status': 'error', 'error': str(e)})
 
 
 def add_task(request):
