@@ -134,11 +134,11 @@ INTERNAL_IPS = [
     '127.0.0.1',
 ]
 
-# CORS_ALLOW_ALL_ORIGINS = True
-#
-# CSRF_TRUSTED_ORIGINS = [
-#     "http://localhost:8000",
-# ]
+CORS_ALLOW_ALL_ORIGINS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+]
 
 LOGGING = {
     'version': 1,
