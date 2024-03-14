@@ -4,8 +4,11 @@
 <head>
   <title>{% block title %}{% endblock %}</title>
   <link href="{% static 'css/base.css' %}" rel="stylesheet">
+<script defer src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script defer src="{% static 'js/detail.js' %}"></script>
+  {% block additional_head %} {% endblock %}
 </head>
+
 <body>
   <div id="header">
     <span class="logo">Task Solver</span>
@@ -43,4 +46,5 @@
     {% endblock %}
   </div>
 </body>
+
 </html>

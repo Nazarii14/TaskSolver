@@ -2,6 +2,7 @@ import json
 import logging
 import requests
 import concurrent.futures
+from .constants import *
 from .models import Task
 from background_task import background
 from django.shortcuts import render
@@ -10,9 +11,6 @@ from django.http import JsonResponse
 
 
 logger = logging.getLogger(__name__)
-
-global task_limit
-task_limit = 20
 
 
 @login_required
@@ -33,7 +31,7 @@ def process_number(request):
 @background(schedule=1)
 def nginx_caller():
     logger.info("Checking for new tasks...")
-    url = 'http://localhost:80/process_number/'
+    url = FETCH_URL
 
     try:
         tasks = Task.objects.filter(is_running=False, is_finished=False)
@@ -80,13 +78,13 @@ def add_task(request):
         data = json.loads(request.body.decode('utf-8'))
         number = data['number']
 
-        if 1 <= int(number) <= 1000000000:
+        if int(number) in range(1, 1000000001):
             logger.info(f'ADDING TASK WITH NEW NUMBER: {number}')
             logger.info(f'REQUEST BODY: {data}')
 
             tasks = Task.objects.filter(user=request.user)
 
-            if tasks.count() < task_limit:
+            if tasks.count() < TASK_LIMIT_PER_USER:
                 task = Task(number=number, user=request.user, is_running=False, is_finished=False,
                             completion_percentage=0, result=-1)
                 task.save()
@@ -118,7 +116,7 @@ def add_task(request):
             return JsonResponse({'task_status': task_status,
                                  'form_input': number,
                                  'count': tasks.count(),
-                                 'number_of_tasks_left': task_limit - tasks.count(),
+                                 'number_of_tasks_left': TASK_LIMIT_PER_USER - tasks.count(),
                                  'message': ''})
         else:
             response_data = {
@@ -155,7 +153,7 @@ def delete_task(request, task_id):
 def check_task_status(request):
     tasks = Task.objects.filter(user=request.user)
     count = tasks.count()
-    tasks_left = task_limit - count
+    tasks_left = TASK_LIMIT_PER_USER - count
     if not tasks:
         return JsonResponse({'task_status': [], 'count': count, 'number_of_tasks_left': tasks_left})
 
