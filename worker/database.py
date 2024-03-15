@@ -1,9 +1,13 @@
+import psycopg2
+import logging
 from constants import *
 from prime import is_prime
-import psycopg2
 from psycopg2 import sql
+from psycopg2.pool import SimpleConnectionPool
 
-conn = psycopg2.connect(
+connection_pool = SimpleConnectionPool(
+    minconn=1,
+    maxconn=15,
     host=DATABASE_HOST,
     database=DATABASE_NAME,
     user=DATABASE_USER,
@@ -11,25 +15,30 @@ conn = psycopg2.connect(
     port=DATABASE_PORT,
 )
 
-def update_task_running(id, is_running):
-    global conn
+def get_connection():
+    return connection_pool.getconn()
+
+
+def release_connection(conn):
+    connection_pool.putconn(conn)
+
+def update_task_running(id: int, is_running: bool) -> None:
+    conn = get_connection()
 
     try:
         with conn.cursor() as cursor:
             update_is_running = sql.SQL('UPDATE tasksolver_task SET is_running = %s WHERE id = %s;')
             cursor.execute(update_is_running, (is_running, id))
             conn.commit()
-
-            print("**************** Committed!")
     except Exception as e:
-        print("Error occurred while updating database:", str(e))
+        logging.error("Error occurred while updating database:", str(e))
         conn.rollback()
+    finally:
+        release_connection(conn)
 
 
-def find_nth_prime_number(n, id):
-    global conn
-
-    # running task update
+def find_nth_prime_number(n: int, id: int) -> int | None:
+    conn = get_connection()
     update_task_running(id, True)
 
     prime_count, candidate, iteration_count = 0, 2, 0
@@ -39,7 +48,7 @@ def find_nth_prime_number(n, id):
         if is_prime(candidate):
             prime_count += 1
             if prime_count == n:
-                write_final_result(candidate, id)
+                write_final_result(str(candidate), id)
                 conn.commit()
                 return candidate
 
@@ -50,14 +59,16 @@ def find_nth_prime_number(n, id):
         if current_percent != previous_percent and current_percent in range(0, 101):
             status = update_db(current_percent, id)
             if status == 'error':
-                print("THERE WAS AN ERROR WHILE UPDATING DB...")
+                logging.error("THERE WAS AN ERROR WHILE UPDATING DB...")
+                conn.rollback()
                 break
             previous_percent = current_percent
+
     return None
 
 
 def update_db(percentage, id):
-    global conn
+    conn = get_connection()
 
     try:
         with conn.cursor() as cursor:
@@ -68,44 +79,50 @@ def update_db(percentage, id):
                 update_query = sql.SQL('UPDATE tasksolver_task SET completion_percentage = %s WHERE id = %s;')
                 cursor.execute(update_query, (percentage, id))
                 conn.commit()
-                print("**************** ITERATIONS")
+
                 get_data_by_id = sql.SQL('SELECT * FROM tasksolver_task WHERE id = %s;')
                 cursor.execute(get_data_by_id, (id,))
                 row = cursor.fetchone()
-                print("ID\tnumber\tuser\tis_running\tis_finished\tresult\t%")
+                logging.debug("ID\tnumber\tuser\tis_running\tis_finished\tresult\t%")
                 res_row = [str(i) for i in row] if row else []
-                print('\t'.join(res_row))
+                logging.debug('\t'.join(res_row))
                 return 'success'
             else:
-                print(f"TASK {id} DOES NOT EXIST IN DB.")
+                logging.error(f"TASK {id} DOES NOT EXIST IN DB.")
                 return 'error'
     except Exception as e:
-        print("Error occurred while updating database:", str(e))
+        logging.error("Error occurred while updating database:", str(e))
+        conn.rollback()
+    finally:
+        release_connection(conn)
 
     try:
         with conn.cursor() as cursor:
-            print("**************** ITERATIONS")
             get_data_by_id = sql.SQL('SELECT * FROM tasksolver_task WHERE id = %s;')
             cursor.execute(get_data_by_id, (id,))
             row = cursor.fetchone()
-            print("ID\tnumber\tuser\tis_running\tis_finished\tresult\t%")
+            logging.debug("ID\tnumber\tuser\tis_running\tis_finished\tresult\t%")
             res_row = [str(i) for i in row] if row else []
-            print('\t'.join(res_row))
+            logging.debug('\t'.join(res_row))
     except Exception as e:
-        print("Error occurred while updating database:", str(e))
-
+        logging.error("Error occurred while updating database:", str(e))
+        conn.rollback()
+    finally:
+        release_connection(conn)
 
 def write_final_result(result, id):
-    global conn
+    conn = get_connection()
 
     try:
         with conn.cursor() as cursor:
             update_query = sql.SQL('UPDATE tasksolver_task SET result = %s, is_running = %s, is_finished = %s WHERE id = %s;')
-            print("**************** WRITING FINAL RESULT")
-            print("**************** RESULT:", result)
-            print("**************** ID:", id)
             cursor.execute(update_query, (result, False, True, id))
             conn.commit()
+            logging.debug("**************** WRITING FINAL RESULT")
+            logging.debug("**************** RESULT:", result)
+            logging.debug("**************** ID:", id)
     except Exception as e:
-        print("Error occurred while updating/querying database:", str(e))
+        logging.error("Error occurred while updating/querying database:", str(e))
         conn.rollback()
+    finally:
+        release_connection(conn)

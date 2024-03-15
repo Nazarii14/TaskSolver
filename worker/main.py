@@ -2,7 +2,7 @@ import os
 import logging
 import psycopg2
 from constants import *
-from database import conn, find_nth_prime_number
+from database import *
 from flask import Flask, g, request
 from flask import jsonify
 from psycopg2 import sql
@@ -26,7 +26,6 @@ def process_number():
     id = data['task_id']
     number = int(data['number'])
     result = find_nth_prime_number(number, id)
-    conn.commit()
 
     return jsonify({'status': 'success', 'result': result})
 

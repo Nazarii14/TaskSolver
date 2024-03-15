@@ -12,7 +12,7 @@ class Task(models.Model):
     is_running = models.BooleanField(default=False)
     is_finished = models.BooleanField(default=False)
     completion_percentage = models.IntegerField(default=0)
-    result = models.IntegerField(default=-1)
+    result = models.CharField(default="")
 
     class Meta:
         indexes = [
